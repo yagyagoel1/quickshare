@@ -1,6 +1,6 @@
 import { Router } from "express";
 import multer  from "multer"
-import { startUpload,  } from "../controller/file.controller";
+import { startUpload, uploadChunk } from "../controller/file.controller";
 
 
 
@@ -10,5 +10,5 @@ const router = Router()
 
 router.route("/startupload").post(startUpload)
 
-router.route('/uploadChunk').post(upload.single("file"))
+router.route('/uploadChunk').post(upload.single("file"),uploadChunk)
 export default router
