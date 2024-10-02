@@ -67,4 +67,52 @@ const uploadChunk =  asyncHandler(async(req:Request,res:Response)=>{
   });
 })
 
-export {startUpload,uploadChunk}
+const completeFileUpload = asyncHandler(async(req:Request,res:Response)=>{
+  const {fileName} = req.query;
+  
+  if(!fileName){
+    return res.status(400).json(new ApiResponse(400,"please specify the upload id in the parameter"))
+  }
+  if(!req.query.uploadId){
+    return res.status(400).json(new ApiResponse(400,"please specify the upload id in the parameter"))
+  }
+  const uploadId = String(req.query.uploadId)
+  const s3Params: {
+    Bucket: string;
+    Key: string;
+    UploadId: string;
+    MultipartUpload?:{Parts:{ETag:any,PartNumber:any}[]}
+}  = {
+    Bucket: bucketName,
+    Key: String(fileName),
+    UploadId: uploadId,
+  };
+  s3.listParts(s3Params,(err,data)=>{
+    if(err){
+      console.log(err);
+      return res.status(500).json(new ApiResponse(500,"there was some error listing parts"));
+    }
+    const parts:{ETag:any,PartNumber:any}[] =[];
+    data.Parts?.forEach(part=>{
+      console.log(typeof(part.ETag),"etag")
+      console.log(typeof(part.PartNumber),"'partnumebr")
+      parts.push({
+        ETag:part.ETag,
+        PartNumber:part.PartNumber
+      })
+    })
+    s3Params.MultipartUpload = {
+      Parts: parts
+    };
+    s3.completeMultipartUpload(s3Params, (err, data) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).json(new ApiResponse(500,"there was some problem completing multipart upload"));
+      }
+
+      console.log("data: ", data)
+      return res.json(new ApiResponse(200,"the upload was successfull",{data:data.Location}));
+    });
+  })
+})
+export {startUpload,uploadChunk,completeFileUpload}
