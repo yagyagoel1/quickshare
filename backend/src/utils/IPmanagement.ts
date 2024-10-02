@@ -29,6 +29,12 @@ class IpTracker {
     _clearIps() {
       this.ipArray = [];
     }
+    addUsed(ip:string,used:number):void {
+        const ipIndex = this.ipArray.findIndex(value=>value.ip===ip)
+        if(ipIndex>=0){
+            this.ipArray[ipIndex].used+=used
+        }
+    }
   }
   
 export const ipManagement = IpTracker.getInstance();
