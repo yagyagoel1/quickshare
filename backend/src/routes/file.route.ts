@@ -1,14 +1,15 @@
 import { Router } from "express";
 import multer  from "multer"
-import { startUpload, uploadChunk } from "../controller/file.controller";
+import { completeFileUpload, startUpload, uploadChunk } from "../controller/file.controller";
+import { authMiddleware } from "../middlewares/auth.middleware";
 
 
 
 const upload = multer()
 const router = Router()
 
+router.route("/startupload").post(authMiddleware,startUpload)
+router.route('/uploadchunk').post(upload.single("file"),authMiddleware,uploadChunk)
 
-router.route("/startupload").post(startUpload)
-
-router.route('/uploadChunk').post(upload.single("file"),uploadChunk)
+router.route("/uploadcompleted").post(authMiddleware,completeFileUpload)
 export default router
