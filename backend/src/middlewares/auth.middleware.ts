@@ -1,18 +1,26 @@
-import { Router } from "express"
+import { Request, Response, Router } from "express"
 import { asyncHandler } from "../utils/asyncHandler"
 import { ipManagement } from "../utils/IPmanagement"
 import { ApiResponse } from "../utils/apiResponse"
 
+declare global {
+    namespace Express {
+      interface Request {
+        ipDetails?: {
+          ip: string;
+          used: number;
+        };
+      }
+    }
+  }
 
-
-const router = Router()
-
-export const authMiddleware = asyncHandler(async (req, res, next) => {
+export const authMiddleware = asyncHandler(async (req:Request, res:Response, next) => {
     
     if(!req.ip){
         return res.status(400).json(new ApiResponse(400,"ip address not found"))
     }
     const ipExist = ipManagement.checkIp(req.ip)
+    req.ipDetails = ipExist
     if(req.ip==="::1"){
         next()
     }
@@ -28,4 +36,5 @@ export const authMiddleware = asyncHandler(async (req, res, next) => {
     else{
         next()
     }
+    
 })
